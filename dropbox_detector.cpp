@@ -1,9 +1,12 @@
+//Author Sunggoo Jung
+//Description: For MBZIRC Challenge 3 Dropbox Detection.
+
 #include "Header.h"
 
 //#define COLOR_FIND
 #define MODE_DEBUG
 
-#define FOCAL_LENGTH    (float)    (  310.86 )
+#define FOCAL_LENGTH    (float)    (  240 )
 #define OBJECT_WIDTH    (float)    (     1.0 )
 #define WIDTH_OFFSET    (  int)    (      10 )
 #define HEIGHT_OFFSET   (  int)    (      10 )
