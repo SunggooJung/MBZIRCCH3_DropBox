@@ -1,10 +1,13 @@
 //Author Sunggoo Jung
 //Description: For MBZIRC Challenge 3 Dropbox Detection.
+//Update
 
 #include "Header.h"
 
 //#define COLOR_FIND
 #define MODE_DEBUG
+#define CASE_NORMAL
+//#define CASE_POLARIZED
 
 #define FOCAL_LENGTH    (float)    (  240 )
 #define OBJECT_WIDTH    (float)    (     1.0 )
@@ -41,7 +44,7 @@ public:
         : it_(nh_)
     {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("/firefly_mv/image_raw", 1, &ImageConverter::imageRgb, this);
+        image_sub_ = it_.subscribe("/firefly_mv_fisheye_bwd/image_raw", 1, &ImageConverter::imageRgb, this);
         rgb_pub_ = it_.advertise("/rgb/image_raw", 1);
         box_pub_ = it_.advertise("/rgb/detect_box", 1);
         Obs_info_pub = nh_.advertise<std_msgs::Float32MultiArray>("/obstacle/center_info",1);
@@ -172,8 +175,13 @@ int main(int argc, char** argv)
             //--------------------------bound rect ------------------------------------------------------------------------------
             vector<vector<cv::Point> > contours;
             vector<cv::Vec4i> hierarchy;
-
+#ifdef CASE_NORMAL
             cv::findContours(andOP,contours,hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0,0));
+#endif
+
+#ifdef CASE_POLARIZED
+            cv::findContours(blue_frame,contours,hierarchy,CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0,0));
+#endif
             vector<cv::Rect> boundRect(contours.size());
 
             cv::Scalar box_color = cv::Scalar(0,255,0);
@@ -207,7 +215,7 @@ int main(int argc, char** argv)
 
                 BndInfo.center[0] = BndInfo.BoxWidth/2.0  + BndInfo.TopLeft[0] ;
                 BndInfo.center[1] = BndInfo.BoxHeight/2.0 + BndInfo.TopLeft[1] ;
-
+/*
                 if (  ( abs(BndInfo.center[0] - centerX_pre) > 80.0 || (BndInfo.BoxWidth/BndInfo.BoxHeight) < 0.9 || (BndInfo.BoxWidth/BndInfo.BoxHeight) > 3.0 ) )// && fcc_psi_info == 1 ) // I put PSI_NAV to make traking on when it turns due to the gate over
                 {
                     BndInfo.center[0] = centerX_pre;
@@ -222,7 +230,7 @@ int main(int argc, char** argv)
                     centerX_pre = BndInfo.center[0];
                     centerY_pre = BndInfo.center[1];
                 }
-
+*/
                 line(drawing, cv::Point(width/2+WIDTH_OFFSET,height/2+HEIGHT_OFFSET), cv::Point(BndInfo.center[0],BndInfo.center[1]), cv::Scalar(0, 0, 0), 2, 8, 0);
                 circle(drawing, cv::Point(BndInfo.center[0],BndInfo.center[1]), 3, cv::Scalar(0, 0, 255), -1, 8, 0);
                 circle(drawing, cv::Point(width/2+WIDTH_OFFSET, height/2+HEIGHT_OFFSET), 3, cv::Scalar(255, 0, 0), -1, 8, 0);
